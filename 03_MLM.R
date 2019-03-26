@@ -1,14 +1,22 @@
 
-glmCount = glmer(counts ~ (1|guild)+ Edge250m+(0+Edge250m|guild)+House250m+(0+House250m|guild) + (1|PLOT), data = gCountLong, family = "poisson")
+lsScale = scale(landscape[,-c(1:2)]); gCountScale =  bind_cols(landscape[,c(1,2)],guildList,landscape[,-c(1,2)]) %>% gather('Resident':'Synanthope', key='guild', value='counts')
+glmCount = lmer(counts ~ (1|guild)+ Edge250m+(0+Edge250m|guild)+House250m+(0+House250m|guild) + (1|PLOT), data = gCountScale)
+tt <- getME(glmCount,"theta")
+ll <- getME(glmCount,"lower")
+min(tt[ll==0])
+
 summary(glmCount)
 anova(glmCount)
 ranef(glmCount)
 
 require(sjPlot)
-sjp.lmer(glmCount)
+plot_model(glmCount, type = "pred", terms = c("Edge250m", "c172code"))
 
 z1 = glmer(counts ~ (1|guild)+ Edge250m+House250m+(0+House250m|guild) + (1|PLOT), data = gCountLong, family = "poisson")
 z2 = glmer(counts ~ (1|guild)+ Edge250m+(0+Edge250m|guild)+House250m+ (1|PLOT), data = gCountLong, family = "poisson")
+
+tab_model(glmCount, z1, z2)
+
 names(glmCount)
 attributes(glmCount)$deviance
 LL <- c(deviance(glmCount), deviance(z1), deviance(z2))
@@ -66,3 +74,9 @@ arrow.coordMLM <- cbind(array(0,dim(envir.points)),-envir.points)
 arrows(arrow.coordMLM[,1],arrow.coordMLM[,2],arrow.coordMLM[,3],arrow.coordMLM[,4], col="black", length=0.1)
 
 text(1.3*-envir.points,label=c("Elevation", "Herb", "LITU", "Ca", "P"),cex=.7)
+
+
+
+##sample size/power tests
+#https://stats.stackexchange.com/questions/48374/sample-size-calculation-for-mixed-models
+#https://stat.ethz.ch/pipermail/r-sig-mixed-models/2009q1/001790.html
