@@ -60,11 +60,11 @@ lsDiff = ls00[,-c(1:2)] - ls70[,-c(1:2)]; lsDiff = bind_cols(PLOT = plotData$PLO
 #plot change in variables
 lsDifflong = lsDiff %>% gather('Core250m':'House2000m', key='var', value='vals')
 lsPlot = ggplot(lsDifflong, aes(var,vals))
-lsPlot+geom_boxplot(notch = TRUE) + geom_jitter(width = 0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+pdf("dLandscape.pdf", width = 8, height = 10)
+lsPlot+geom_boxplot() + geom_jitter(width = 0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
 
 lsLong = landscape %>% gather('Core250m':'House2000m', key='var', value='vals')
-
-
 
 # t-test for independent variables
 tTestdf = data.frame(matrix(nrow = 16, ncol = 6));names(tTestdf) = c("var","stat","Pval","Est","CIlow","CIhigh")
@@ -78,5 +78,7 @@ for(i in 3:ncol(landscape)){
 }
 
 #correlation of variables
+pdf(file = "CorrPlots.pdf", width = 8, height = 10)
 corrplot(cor(ls70[,-c(1:2)]),type = "upper", method = "number", number.cex=0.7)
 corrplot(cor(ls00[,-c(1:2)]),type = "upper", method = "number", number.cex=0.7)
+dev.off()

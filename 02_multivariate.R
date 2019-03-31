@@ -1,4 +1,4 @@
-#source('01_MossmanAnalysis.R')
+#source('01_dataPrep.R')
 lapply(packages.list, require, character.only=T)
 
 lsMRPP = mrpp(landscape[,-1], grouping = 'Year')
@@ -6,10 +6,18 @@ lsMRPP = mrpp(landscape[,-1], grouping = 'Year')
 dist70 = vegdist(ls70[,-c(1:2)]);dist00 = vegdist(ls00[,-c(1:2)])
 mantel(dist70,dist00)
 
+
+#NMS
 ord.dat = select(birdRA, .data$ACFL:.data$YTVI)
 mm.Norm <- wisconsin(ord.dat)
-adonisForm <- as.formula("mm.Norm~Core250m + Edge250m + House250m + Core1000m +  Edge1000m +  House1000m")
-d.adonis <- adonis2(mm.Norm~1, strata = c(rep(1970,18),rep(2000,18)), permutations = 10000)
+mm.NMS <- metaMDS(mm.Norm, trymax = 500, distance = 'bray', k = 3)
+valForm = paste(colnames(lsDiff)[-1], sep = "", collapse = '+')
+colForm <- as.formula(paste('mm.NMS ~ ',valForm))
+mm.NMS <- envfit(colForm, choices = c(1,2), data = landscape, perm = 10000)
+mm.NMS
+
+adonisForm <- as.formula("mm.Norm~ Edge250m + House250m + Core1000m +  Edge1000m +  House1000m")
+d.adonis <- adonis2(adonisForm,data =  strata = c(rep(1970,18),rep(2000,18)), permutations = 10000)
 d.adonis
 
 
